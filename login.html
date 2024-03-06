@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Admin Neighborhood</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #007bff; /* Changed background color to blue */
+            margin: 0;
+            padding: 0;
+            color: #fff; /* White text color */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .home-content {
+            display: none;
+            text-align: center; /* Align text in the center */
+            margin-top: 100px; /* Adjust margin-top to push the content down */
+            color: #fff; /* Change text color to white */
+        }
+
+        .logout-btn {
+            background-color: #ff0000; /* Changed button color to red */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px; /* Smaller padding */
+            cursor: pointer;
+            font-size: 14px; /* Smaller font size */
+        }
+
+        /* GUI Popup Styles */
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            z-index: 9999; /* Ensure popup is on top */
+        }
+
+        #popup input[type="text"] {
+            width: calc(100% - 22px); /* Adjust input width */
+            margin-bottom: 10px;
+        }
+
+        #popup button {
+            width: calc(100% - 22px); /* Adjust button width */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Welcome to the Free Admin Neighborhood</h1>
+
+    <div class="login-container" id="loginContainer">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="button" onclick="login()">Login</button> <!-- Changed type to button to prevent form submission -->
+        </form>
+    </div>
+
+    <div class="home-content" id="homeContent">
+        <h1>Welcome to the Staff Area</h1>
+        <p>This is the home screen.</p>
+        <button class="logout-btn" id="logoutButton">Logout</button>
+        <button onclick="openGui()">Warn User</button>
+    </div>
+</div>
+
+<!-- GUI Popup -->
+<div id="popup">
+    <h2>Warn User</h2>
+    <form id="warnForm">
+        <input type="text" id="userToWarn" placeholder="User to Warn" required>
+        <input type="text" id="reason" placeholder="Reason" required>
+        <button type="button" onclick="sendWarning()">Send</button>
+        <button type="button" onclick="clearFields()">Clear</button> <!-- Add clear button -->
+        <button type="button" onclick="closeGui()">Close</button> <!-- Add close button -->
+    </form>
+</div>
+
+<script>
+    // Define accounts array with username/password pairs
+    var accounts = [
+        { username: "Staff2024", password: "F.A.N" },
+        // Add more accounts here
+    ];
+
+    function openGui() {
+        document.getElementById("popup").style.display = "block";
+    }
+
+    function sendWarning() {
+        var userToWarn = document.getElementById("userToWarn").value;
+        var reason = document.getElementById("reason").value;
+        // Check if both fields are filled
+        if (userToWarn && reason) {
+            // Construct message with user and reason
+            var message = "User " + userToWarn + " has been warned for: " + reason;
+            // Send message to Discord webhook
+            fetch('https://discord.com/api/webhooks/1205995144621588512/t2pjJWjiup2eq_zOxJhSljUIVJrQYkB3PaHKQl66Py6kK1Aac4TROQ4HBLpvT4onJTZ7', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: message }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to send message to Discord');
+                }
+                alert('Warning sent successfully!');
+                document.getElementById("popup").style.display = "none"; // Close GUI popup
+            })
+            .catch(error => {
+                console.error('Error sending message to Discord:', error);
+                alert('Failed to send warning. Please try again.');
+            });
+        } else {
+            alert("Please fill in both fields.");
+        }
+    }
+
+    function clearFields() {
+        document.getElementById("userToWarn").value = "";
+        document.getElementById("reason").value = "";
+    }
+
+    function closeGui() {
+        document.getElementById("popup").style.display = "none";
+    }
+
+    function login() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+
+        // Check if entered credentials match any account
+        var isValid = accounts.some(function(account) {
+            return account.username === username && account.password === password;
+        });
+
+        if (isValid) {
+            // Show home content and hide login form
+            document.getElementById("loginContainer").style.display = "none";
+            document.getElementById("homeContent").style.display = "block";
+        } else {
+            alert("Invalid username or password. Please try again.");
+        }
+    }
+
+    document.getElementById("logoutButton").addEventListener("click", function() {
+        // Reload the page to show the login screen again
+        location.reload();
+    });
+</script>
+
+</body>
+</html>
+
